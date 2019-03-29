@@ -305,7 +305,6 @@ else {
 }
 ```
 ```
-
 return {
     "temperature": JSON.stringify(decoded.temperature),
     "light" : JSON.stringify(decoded.light),
