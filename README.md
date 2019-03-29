@@ -1,2 +1,283 @@
-# iotcttnhack
-IoT Central Lorawan TTN Hackaton
+# IoT Central Lorawan TTN Hackaton
+The goal of this workshop is to setup a working end-to-end IoT solution based on Azure IoT Central, The Things Network and Lorawan.
+
+![flow image][flow]
+
+[flow]: /resources/flow.png "Flow"
+
+During this hackaton will complete the following tasks:
+- Setup an Arduino Development Environment
+- Configure and program a device
+- Configure and setup a LoraWAN gateway 
+- Setup conncectivity from the gateway to The Things Network
+- Decode data using custom code in The Things Network
+- Send data from The Things Network to IoT Central via and device bridge running in an Azure Function
+- Create and configure IoT Central
+
+### Prerequisites
+- Laptop
+    - Linux, Mac or Windows
+- Azure Subscription
+    - [portal.azure.com](https://portal.azure.com)
+- TTN Node Device
+    - _"The Things Node is based off the SparkFun Pro Micro - 3.3V/8Mhz with added Microchip LoRaWAN module and temperature sensor, NXP’s digital accelerometer, a light sensor, button and RGB LED. All this is packaged in a matchbox-sized waterproof (IP54) casing with 3 AAA batteries to power it for months of usage."_
+    - [https://www.thethingsnetwork.org/docs/devices/node/](https://www.thethingsnetwork.org/docs/devices/node/)
+- Lorawan Gateway
+    - [https://connectivity.lairdtech.com/wireless-modules/lorawan-solutions/sentrius-rg1xx-lora-enabled-gateway-wi-fi-bluetooth-ethernet](https://connectivity.lairdtech.com/wireless-modules/lorawan-solutions/sentrius-rg1xx-lora-enabled-gateway-wi-fi-bluetooth-ethernet)
+- USB to mini USB cable for programming the device 
+- Basic understanding of IoT and programming
+- Basic understanding of Microsoft Azure
+- Optional: 3 x AAA batteries if you want to test the device without being connected to your laptop
+
+## Install Arduino IDE
+- Follow the guide [here](https://www.arduino.cc/en/Guide/HomePage) to install the IDE for your platform
+
+### Install Arduino Boards
+- The Pro Micro boards are not developed by Arduino. As a result the boards are not available in a newly installed IDE
+- Add the boards in the IDE: 
+    - Open 'Preferences' from the 'File' menu
+    - In the 'Additional Boards Manager URL' enter 'https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json'
+    - Close the dialog with 'OK'
+- Go to the 'Tools' menu, item 'Board: "Arduino/Genuino Uno"', this will open a sub menu, select 'Board Manager'
+    - In the boards manager, type 'sparkfun' in the dialog to show all SparkFun provided board packages
+    - Click on 'SparkFun AVR Boards' to select the package and click 'Install' to install the board definitions on your system
+- Open the 'Tools' menu and go to the 'Board: "Arduino/Genuino Uno"' again. Now select 'SparkFun Pro Micro' from the list
+- IMPORTANT: Open the 'Tools' menu again, at 'Processor' select "ATmega32u4 (3.3V, 8MHz)."
+
+### Install TTN Arduino Packages
+- The TTN Node has some specific packages you can install to get started quickly. They are not in the IDE by default so you have to install them.
+- Add the packages in the IDE:
+    - Open the 'Sketch' menu
+    - Click 'Include Library' then 'Manage Libraries'
+    - In the Library Manager search for 'thethingsnode' and click 'Install'
+    - In the Library Manager search for 'thethingsnetwork' and click 'Install'
+    - Click 'Close'
+- You can now find 'TheThingsNetwork' and 'TheThingsNode' under 'Contributed Libraries'
+    - The easiest way to get started is the 'Basic' sketch, but you will be guided later on the specific code to use
+
+## Configure & Connect Gateway to TTN
+- Setup your Laird GW as described in [this PDF doc](https://connectivity-staging.s3.us-east-2.amazonaws.com/s3fs-public/2018-10/Sentrius%20RG1xx%20Quick%20Start%20Guide%20v2_1.pdf) chapters 3, 4 and 5
+- Configure packet forwarding as describe in chapter 6
+    - Important use the "The Things Network Legacy" option!
+- Complete the configuration with TTN as described in chapter 7 
+    - This will create both a gateway and an application in TTN
+
+## Upload App Code v.1 to TTN Node
+- Use the IDE to upload the following code to the device
+    - Remember to insert in your own 'appEui' and 'appKey'
+```
+#include <TheThingsNode.h>
+
+// Set your AppEUI and AppKey
+const char *appEui = "INSERT YOU OWN";
+const char *appKey = "INSERT YOU OWN";
+
+#define loraSerial Serial1
+#define debugSerial Serial
+
+// Replace REPLACE_ME with TTN_FP_EU868 or TTN_FP_US915
+#define freqPlan TTN_FP_EU868
+
+TheThingsNetwork ttn(loraSerial, debugSerial, freqPlan);
+TheThingsNode *node;
+
+#define PORT_SETUP 1
+#define PORT_INTERVAL 2
+#define PORT_MOTION 3
+#define PORT_BUTTON 4
+
+void setup()
+{
+  loraSerial.begin(57600);
+  debugSerial.begin(9600);
+
+  // Wait a maximum of 10s for Serial Monitor
+  while (!debugSerial && millis() < 10000)
+    ;
+
+  // Config Node
+  node = TheThingsNode::setup();
+  node->configLight(true);
+  node->configInterval(true, 60000);
+  node->configTemperature(true);
+  node->onWake(wake);
+  node->onInterval(interval);
+  node->onSleep(sleep);
+  node->onMotionStart(onMotionStart);
+  node->onButtonRelease(onButtonRelease);
+
+  // Test sensors and set LED to GREEN if it works
+  node->showStatus();
+  node->setColor(TTN_GREEN);
+
+  debugSerial.println("-- TTN: STATUS");
+  ttn.showStatus();
+
+  debugSerial.println("-- TTN: JOIN");
+  ttn.join(appEui, appKey);
+
+  debugSerial.println("-- SEND: SETUP");
+  sendData(PORT_SETUP);
+}
+
+void loop()
+{
+  node->loop();
+}
+
+void interval()
+{
+  node->setColor(TTN_BLUE);
+
+  debugSerial.println("-- SEND: INTERVAL");
+  sendData(PORT_INTERVAL);
+}
+
+void wake()
+{
+  node->setColor(TTN_GREEN);
+}
+
+void sleep()
+{
+  node->setColor(TTN_BLACK);
+}
+
+void onMotionStart()
+{
+  node->setColor(TTN_BLUE);
+
+  debugSerial.print("-- SEND: MOTION");
+  sendData(PORT_MOTION);
+}
+
+void onButtonRelease(unsigned long duration)
+{
+  node->setColor(TTN_BLUE);
+
+  debugSerial.print("-- SEND: BUTTON");
+  debugSerial.println(duration);
+
+  sendData(PORT_BUTTON);
+}
+
+void sendData(uint8_t port)
+{
+  // Wake RN2483
+  ttn.wake();
+
+  ttn.showStatus();
+  node->showStatus();
+
+  byte *bytes;
+  byte payload[6];
+
+  //Battery
+  uint16_t battery = node->getBattery();
+  bytes = (byte *)&battery;
+  payload[0] = bytes[1];
+  payload[1] = bytes[0];
+
+  //Light
+  uint16_t light = node->getLight();
+  bytes = (byte *)&light;
+  payload[2] = bytes[1];
+  payload[3] = bytes[0];
+
+  // Temperature
+  int16_t temperature = round(node->getTemperatureAsFloat() * 100);
+  bytes = (byte *)&temperature;
+  payload[4] = bytes[1];
+  payload[5] = bytes[0];
+
+  ttn.sendBytes(payload, sizeof(payload), port);
+
+  // Set RN2483 to sleep mode
+  ttn.sleep(60000);
+
+  // This one is not optionnal, remove it
+  // and say bye bye to RN2983 sleep mode
+  delay(50);
+}
+```
+- Make sure you have connected the device using USB
+- Make sure you have selected the correct COM port in the IDE
+- Upload the code to the device 
+- View the Serial Monitor to validate that the device connect and sends data
+### Valider Data From TTN Node --> TTN
+- On the TTN website go and view the data packages from the device
+- If you are really good a decoding a byte array you will probably need a Decoder to understand the data...
+- Same goes for IoT Central as it will expect a JSON payload
+
+## Create IoT Central Instance
+### TODO
+
+### Create a Device Template
+	
+## Create Azure Function
+### TODO
+
+## Add TTN Decoder v.1 to the TTN Application
+- On the application in TTN add a decoder using the code below
+```
+function Decoder(bytes, port) {
+  var decoded = {};
+  var events = {
+    1: 'setup',
+    2: 'interval',
+    3: 'motion',
+    4: 'button'
+  };
+  decoded.event = events[port];
+  decoded.battery = (bytes[0] << 8) + bytes[1];
+  decoded.light = (bytes[2] << 8) + bytes[3];
+  if (bytes[4] & 0x80)
+    decoded.temperature = ((0xffff << 16) + (bytes[4] << 8) + bytes[5]) / 100;
+  else {
+    decoded.temperature = ((bytes[4] << 8) + bytes[5]) / 100;
+  }
+  
+    return {
+        "temperature": JSON.stringify(decoded.temperature),
+        "light" : JSON.stringify(decoded.light),
+        "battery" : JSON.stringify(decoded.battery),
+        "event" : decoded.event
+    };
+}
+```
+## Setup TTN HTTP TODO
+
+## Add a Button Pressed Event
+In this part you only get hints. By now you are ready to start modifying the code yourself!
+
+## TTN Node Code v.2
+These are just hint complete the code yourself :-)
+```
+if(INSERT YOUR OWN LOGIC) {
+    payload[6] = (byte *)true; 
+}
+else {
+    payload[6] = (byte *)false;
+}
+```
+
+## TTN Decoder v.2
+These are just hint complete the code yourself :-)
+```
+if(INSERT YOUR OWN LOGIC) {
+    decoded.buttonpressed = true;
+}
+else {
+    decoded.buttonpressed = false;
+}
+```
+```
+
+return {
+    "temperature": JSON.stringify(decoded.temperature),
+    "light" : JSON.stringify(decoded.light),
+    "battery" : JSON.stringify(decoded.battery),
+    "event" : decoded.event,
+    "buttonpressed" : INSERT YOUR OWN CODE
+}; 
+```
