@@ -1,11 +1,20 @@
 # IoT Central Lorawan TTN Hackaton
 The goal of this workshop is to setup a working end-to-end IoT solution based on Azure IoT Central, The Things Network and Lorawan.
 
+The overall flow for the IoT telemetry:
+
 ![flow image][flow]
 
-[flow]: /resources/flow.png "Flow"
+The device we will be using:
 
-During this hackaton will complete the following tasks:
+![node image][node] 
+
+The gateway used:
+
+![laird image][laird]
+
+
+During this hackaton you will complete the following tasks:
 - Setup an Arduino Development Environment
 - Configure and program a device
 - Configure and setup a LoraWAN gateway 
@@ -24,10 +33,14 @@ During this hackaton will complete the following tasks:
     - [https://www.thethingsnetwork.org/docs/devices/node/](https://www.thethingsnetwork.org/docs/devices/node/)
 - Lorawan Gateway
     - [https://connectivity.lairdtech.com/wireless-modules/lorawan-solutions/sentrius-rg1xx-lora-enabled-gateway-wi-fi-bluetooth-ethernet](https://connectivity.lairdtech.com/wireless-modules/lorawan-solutions/sentrius-rg1xx-lora-enabled-gateway-wi-fi-bluetooth-ethernet)
-- USB to mini USB cable for programming the device 
+- USB to mini USB cable for programming the device
 - Basic understanding of IoT and programming
 - Basic understanding of Microsoft Azure
 - Optional: 3 x AAA batteries if you want to test the device without being connected to your laptop
+
+[flow]: /resources/flow.png "Flow"
+[node]: /resources/ttn-node.png "Node"
+[laird]: /resources/laird.png "Laird"
 
 ## Install Arduino IDE
 - Follow the guide [here](https://www.arduino.cc/en/Guide/HomePage) to install the IDE for your platform
@@ -36,13 +49,13 @@ During this hackaton will complete the following tasks:
 - The Pro Micro boards are not developed by Arduino. As a result the boards are not available in a newly installed IDE
 - Add the boards in the IDE: 
     - Open 'Preferences' from the 'File' menu
-    - In the 'Additional Boards Manager URL' enter 'https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json'
+    - In the 'Additional Boards Manager URL' enter https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json
     - Close the dialog with 'OK'
 - Go to the 'Tools' menu, item 'Board: "Arduino/Genuino Uno"', this will open a sub menu, select 'Board Manager'
     - In the boards manager, type 'sparkfun' in the dialog to show all SparkFun provided board packages
     - Click on 'SparkFun AVR Boards' to select the package and click 'Install' to install the board definitions on your system
 - Open the 'Tools' menu and go to the 'Board: "Arduino/Genuino Uno"' again. Now select 'SparkFun Pro Micro' from the list
-- IMPORTANT: Open the 'Tools' menu again, at 'Processor' select "ATmega32u4 (3.3V, 8MHz)."
+- __IMPORTANT: Open the 'Tools' menu again, in 'Processor' select 'ATmega32u4 (_3.3V, 8MHz_)'__
 
 ### Install TTN Arduino Packages
 - The TTN Node has some specific packages you can install to get started quickly. They are not in the IDE by default so you have to install them.
@@ -204,21 +217,37 @@ void sendData(uint8_t port)
 - Make sure you have selected the correct COM port in the IDE
 - Upload the code to the device 
 - View the Serial Monitor to validate that the device connect and sends data
-### Valider Data From TTN Node --> TTN
-- On the TTN website go and view the data packages from the device
-- If you are really good a decoding a byte array you will probably need a Decoder to understand the data...
-- Same goes for IoT Central as it will expect a JSON payload
+### Validate Data From TTN Node Device to TTN
+- On the TTN website go and view the data packages from the device on the TTN Application
+- Unless you are really good a decoding a byte array you will probably need a Decoder to understand the data...
+- The same goes for IoT Central as it will expect a JSON payload not a byte array
 
 ## Create IoT Central Instance
-### TODO
+- Follow the guide here to deploy you IoT Central: https://docs.microsoft.com/en-us/azure/iot-central/quick-deploy-iot-central
+    - In step 1: Choose the 'Pay-As-You-Go' otherwise you will loose everything after 7 days and cost for this setup is minimal
+    - In step 3: Choose 'Custom application' 
+- For general reference on the UI of IoT Central refer to: https://docs.microsoft.com/en-us/azure/iot-central/overview-iot-central-tour
 
 ### Create a Device Template
-	
-## Create Azure Function
-### TODO
+- In the newly create IoT Central create a device template
+- Telemetry:
+    - Battery Voltage
+        Field: battery
+    - Light
+        Field: light
+    - Temperature
+        Field: temperature
+- State:
+    - Device state
+        - Field: event
+        - Values: button, setup, interval, motion
+
+## Create IoT Device Bridge with an Azure Function 
+- Follow the guidance on https://github.com/Azure/iotc-device-bridge to deploy and configure the device bridge on an Azure Function
 
 ## Add TTN Decoder v.1 to the TTN Application
 - On the application in TTN add a decoder using the code below
+    - Application > Payload Formats > Decoder
 ```
 function Decoder(bytes, port) {
   var decoded = {};
@@ -245,9 +274,13 @@ function Decoder(bytes, port) {
     };
 }
 ```
-## Setup TTN HTTP TODO
+## Setup TTN HTTP Integration
+- On the application in TTN add an integration to the Azure Function
+    - Application > Integrations > add integration > HTTP Integration
+    - Get the endpoint from the Azure Function as describe in step 5 on https://github.com/Azure/iotc-device-bridge
 
-## Add a Button Pressed Event
+
+# Add a Button Pressed Event
 In this part you only get hints. By now you are ready to start modifying the code yourself!
 
 ## TTN Node Code v.2
@@ -281,3 +314,16 @@ return {
     "buttonpressed" : INSERT YOUR OWN CODE
 }; 
 ```
+
+## Add IoT Central Event
+- Add an Event type on the Device Template called 'Button Pressed' using the telemetry field from the device
+    - Field: buttonpressed
+
+# OPTIONAL: Build a Device Template Dashboard in IoT Central
+- Build a nice looking dashboard on the Device Template showing important information
+
+# OPTIONAL: Setup Alert in IoT Central
+- Setup and an Alert sending an email of the temperature is above a threshold for 5 minutes.
+
+## OPTIONAL: Setup Continuous Export from IoT Central
+- Setup Continuous Export from IoT Central to blob storage
