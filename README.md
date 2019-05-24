@@ -27,7 +27,7 @@ During this hackaton you will complete the following tasks:
 - Laptop
     - Linux, Mac or Windows
 - Azure Subscription
-    - [portal.azure.com](https://portal.azure.com)
+    - [https://portal.azure.com](https://portal.azure.com)
 - TTN Node Device
     - _"The Things Node is based off the SparkFun Pro Micro - 3.3V/8Mhz with added Microchip LoRaWAN module and temperature sensor, NXP’s digital accelerometer, a light sensor, button and RGB LED. All this is packaged in a matchbox-sized waterproof (IP54) casing with 3 AAA batteries to power it for months of usage."_
     - [https://www.thethingsnetwork.org/docs/devices/node/](https://www.thethingsnetwork.org/docs/devices/node/)
@@ -43,7 +43,7 @@ During this hackaton you will complete the following tasks:
 [laird]: /resources/laird.png "Laird"
 
 ## Install Arduino IDE
-- Follow the guide [here](https://www.arduino.cc/en/Guide/HomePage) to install the IDE for your platform
+- Follow the guide here [https://www.arduino.cc/en/Guide/HomePage](https://www.arduino.cc/en/Guide/HomePage) to install the IDE for your platform
 
 ### Install Arduino Boards
 - The Pro Micro boards are not developed by Arduino. As a result the boards are not available in a newly installed IDE
@@ -69,11 +69,14 @@ During this hackaton you will complete the following tasks:
     - The easiest way to get started is the 'Basic' sketch, but you will be guided later on the specific code to use
 
 ## Configure & Connect Gateway to TTN
-- Setup your Laird GW as described in [this PDF doc](https://connectivity-staging.s3.us-east-2.amazonaws.com/s3fs-public/2018-10/Sentrius%20RG1xx%20Quick%20Start%20Guide%20v2_1.pdf) chapters 3, 4 and 5
-- Configure packet forwarding as describe in chapter 6
+- Laird GW (the one tested for this guide)
+  - Setup your Laird GW as described in this PDF doc [https://connectivity-staging.s3.us-east-2.amazonaws.com/s3fs-public/2018-10/Sentrius%20RG1xx%20Quick%20Start%20Guide%20v2_1.pdf](https://connectivity-staging.s3.us-east-2.amazonaws.com/s3fs-public/2018-10/Sentrius%20RG1xx%20Quick%20Start%20Guide%20v2_1.pdf) in chapters 3, 4 and 5
+    - You can use a wired connection, but you probably want to setup wifi as described in chapter 5.2
+  - Configure packet forwarding as describe in chapter 6
     - Important use the "The Things Network Legacy" option!
-- Complete the configuration with TTN as described in chapter 7 
+  - Complete the configuration with TTN as described in chapter 7 
     - This will create both a gateway and an application in TTN
+- For other supported gateways see here: https://www.thethingsnetwork.org/docs/gateways/ and follow the guidance provided
 
 ## Upload App Code v.1 to TTN Node
 - Use the IDE to upload the following code to the device
@@ -216,7 +219,7 @@ void sendData(uint8_t port)
 - Make sure you have connected the device using USB
 - Make sure you have selected the correct COM port in the IDE
 - Upload the code to the device 
-- View the Serial Monitor to validate that the device connect and sends data
+- View the Serial Monitor to validate that the device connects to gw and sends data
 ### Validate Data From TTN Node Device to TTN
 - On the TTN website go and view the data packages from the device on the TTN Application
 - Unless you are really good a decoding a byte array you will probably need a Decoder to understand the data...
@@ -322,7 +325,9 @@ return {
 - Build a nice looking dashboard on the Device Template showing important information
 
 # OPTIONAL: Setup Alert in IoT Central
-- Setup and an Alert sending an email of the temperature is above a threshold for 5 minutes.
+- Setup and an Alert sending an email of the temperature is above a threshold for 5 minutes
+https://docs.microsoft.com/en-us/azure/iot-central/tutorial-configure-rules
 
 ## OPTIONAL: Setup Continuous Export from IoT Central
 - Setup Continuous Export from IoT Central to blob storage
+https://docs.microsoft.com/en-us/azure/iot-central/howto-export-data-blob-storage
