@@ -247,7 +247,31 @@ void sendData(uint8_t port)
 
 ## Create IoT Device Bridge with an Azure Function 
 - Follow the guidance on https://github.com/Azure/iotc-device-bridge to deploy and configure the device bridge on an Azure Function
+    - Replace the code in the method in line 19 with the following: 
+```
+module.exports = async function (context, req) {
+    try {
+        context.log('req: ', req);
+        context.log('measurements: ', req.body.measurements);
+        context.log('hw serial: ', req.body.hardware_serial.toLowerCase());
+        req.body = {
+            device: {
+                deviceId: req.body.hardware_serial.toLowerCase()
+            },
+            measurements: req.body.payload_fields
+        };
 
+        await handleMessage({ ...parameters, log: context.log, getSecret: getKeyVaultSecret }, req.body.device, req.body.measurements, req.body.timestamp);
+    } catch (e) {
+        context.log('[ERROR]', e.message);
+
+        context.res = {
+            status: e.statusCode ? e.statusCode : 500,
+            body: e.message
+        };
+    }
+}
+```
 ## Add TTN Decoder v.1 to the TTN Application
 - On the application in TTN add a decoder using the code below
     - Application > Payload Formats > Decoder
