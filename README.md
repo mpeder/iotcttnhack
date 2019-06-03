@@ -328,6 +328,6 @@ return {
 - Setup and an Alert sending an email of the temperature is above a threshold for 5 minutes
 https://docs.microsoft.com/en-us/azure/iot-central/tutorial-configure-rules
 
-## OPTIONAL: Setup Continuous Export from IoT Central
+# OPTIONAL: Setup Continuous Export from IoT Central
 - Setup Continuous Export from IoT Central to blob storage
 https://docs.microsoft.com/en-us/azure/iot-central/howto-export-data-blob-storage
