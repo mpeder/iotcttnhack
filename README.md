@@ -52,6 +52,7 @@ During this hackaton you will complete the following tasks:
 - [Create IoT Device Bridge with an Azure Function](#iotfunc)
 - [Add TTN Decoder v.1 to the TTN Application](#ttndecoder)
 - [Setup TTN HTTP Integration](#ttnhttp)
+- [Associate, Connect & View Device Data in IoT Central](#iotcconnect)
 - [Add a Button Pressed Event](#btnpressevent)
     - [TTN Node Code v.2](#ttnnodecodev2)
     - [TTN Decoder v.2](#ttndecoderv2)
@@ -324,6 +325,11 @@ function Decoder(bytes, port) {
     - Application > Integrations > add integration > HTTP Integration
     - Get the endpoint from the Azure Function as describe in step 5 on https://github.com/Azure/iotc-device-bridge
 
+##  <a name="iotcconnect">Associate, Connect & View Device Data in IoT Central</a>
+- We are using the approach described here: https://docs.microsoft.com/en-us/azure/iot-central/concepts-connectivity#connect-without-registering-devices 
+    - Make sure your device is sending data to TTN and that TTN is sending data to the Azure Function
+    - In IoT Central associate and approve the device
+    - Wait a couple of minutes and verify that data is being received in IoT Central
 
 ## <a name="btnpressevent">Add a Button Pressed Event</a>
 In this part you only get hints. By now you are ready to start modifying the code yourself!
