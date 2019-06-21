@@ -41,6 +41,8 @@ During this hackaton you will complete the following tasks:
 [flow]: /resources/flow.png "Flow"
 [node]: /resources/ttn-node.png "Node"
 [laird]: /resources/laird.png "Laird"
+[device-eui]: /resources/dev-eui.png "Device EUI"
+
 
 ### Contents
 - [Install Arduino IDE](#arduioneide)
@@ -95,6 +97,7 @@ During this hackaton you will complete the following tasks:
     - Important use the "The Things Network Legacy" option!
   - Complete the configuration with TTN as described in chapter 7 
     - This will create both a gateway and an application in TTN
+    - Tip: you will need the Device EUI for the application in TTN. You can get this via the Arduino Serial Monitor ![deviceeui image][device-eui] 
 - For other supported gateways see here: https://www.thethingsnetwork.org/docs/gateways/ and follow the guidance provided
 
 ## <a name="appcode">Upload App Code v.1 to TTN Node</a>
