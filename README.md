@@ -359,13 +359,21 @@ else {
 }
 ```
 ```
-return {
-    "temperature": JSON.stringify(decoded.temperature),
-    "light" : JSON.stringify(decoded.light),
-    "battery" : JSON.stringify(decoded.battery),
-    "event" : decoded.event,
-    "buttonpressed" : INSERT YOUR OWN CODE
-}; 
+if(decoded.buttonpressed)
+{
+    return {
+        "temperature": JSON.stringify(decoded.temperature),
+        "light" : JSON.stringify(decoded.light),
+        "battery" : JSON.stringify(decoded.battery),
+        "event" : decoded.event,
+        "buttonpressed" : INSERT YOUR OWN CODE
+    };
+}
+else {
+    return {
+        INSERT YOUR OWN CODE
+    };
+}
 ```
 
 ### <a name="iotcevent">Add IoT Central Event</a>
