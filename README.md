@@ -33,6 +33,7 @@ During this hackaton you will complete the following tasks:
     - [https://www.thethingsnetwork.org/docs/devices/node/](https://www.thethingsnetwork.org/docs/devices/node/)
 - Lorawan Gateway
     - [https://connectivity.lairdtech.com/wireless-modules/lorawan-solutions/sentrius-rg1xx-lora-enabled-gateway-wi-fi-bluetooth-ethernet](https://connectivity.lairdtech.com/wireless-modules/lorawan-solutions/sentrius-rg1xx-lora-enabled-gateway-wi-fi-bluetooth-ethernet)
+    - The guidance provided here should also work with other gateways like the ones listed here: [https://www.thethingsnetwork.org/docs/gateways/](https://www.thethingsnetwork.org/docs/gateways/), but this has not been tested!
 - USB to mini USB cable for programming the device
 - Basic understanding of IoT and programming
 - Basic understanding of Microsoft Azure
